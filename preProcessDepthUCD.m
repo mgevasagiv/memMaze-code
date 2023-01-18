@@ -3,14 +3,14 @@ function preProcessDepthUCD(subj,exp)
 dropboxLink()
 
 % Load header + EXP data once it's ready
-header = getExperimentHeader(sprintf('p%d',subj),0, exp);
-PtList = importXLSClosedLoopPatientList(fullfile(dropbox_link,'Nir_Lab\Work\closedLoopPatients\closedLoopStats1.xlsx')...
-    ,'SubjectCharacteristics',40);
+header = getmemMazeExperimentHeader(sprintf('%s',subj), exp);
+PtList = importXLSMazePatientList(fullfile(dropbox_link,'RanganathLab\work\mazeStudy\mazeSessions.xlsx')...
+    ,'Subjects',10);
 ptInd = [];
 
 for ii = 1:length(PtList)
-    if PtList(ii).subj == subj;
-        if PtList(ii).Nsessions == exp
+    if strcmp(PtList(ii).subj,subj)
+        if PtList(ii).exp == exp
             ptInd = ii;
             break;
         end
@@ -34,18 +34,47 @@ if isempty(ptInd)
 else
     PtEntry = PtList(ptInd);
 end
-datasetFilename = fullfile(header.processedDataPath,sprintf('%s_EXP%d_dataset.mat',header.id,header.experimentNum));
+datasetFilename = fullfile(header.processedDataPath,sprintf('p%s_EXP%d_dataset.mat',header.id,header.experimentNum));
 a = dir(datasetFilename);
 if ~isempty(a)
     
     load(datasetFilename)
-    load(fullfile(header.root_data,'montage.mat'))
-    % MICRO_stim_timing_MICRO_SR  = EXP_DATA.MICRO_stim_timing_MICRO_SR;
+    
+    % Load MacroMontage
+    % load(fullfile(header.macroMontagePath,'MacroMontage.mat'))
+
     % Load spike data once it's available
-    load(fullfile(header.processed_AverageRef,sprintf('%s_spike_timestamps_post_processing',header.id)))
+    % load(fullfile(header.processed_AverageRef,sprintf('%s_spike_timestamps_post_processing',header.id)))
     
 else % prepare dataset file
     
+    if prep_macroMontage
+        macroMontageSheet = 'MacroMontage';
+        p_in.numeric_fields = {'Channel'}; % numeric fields in excel
+        MacroMontage= [];
+        
+        if strfind(header.id,'p') % manual montage for UCLA patients
+            cell_rows = 1:150;
+            MacroMontage = read_excel_sheet(header.excel_sheet,macroMontageSheet,cell_rows,p_in.numeric_fields,p_in);
+            
+            % get rid of empty entries
+            ii = length(MacroMontage);
+            while(1)
+                if isempty(MacroMontage(ii).Area)
+                    MacroMontage(ii) = [];
+                    disp(sprintf('removed entry %d',ii))
+                else
+                    break
+                end
+                ii = ii - 1;
+            end
+            if isempty(dir(header.root_data))
+                mkdir(header.root_data)
+            end
+            save(header.macroMontagePath,'MacroMontage')
+        end
+        
+    end
     %% This should be ran once for each session and saved for later usage
     %% Manually update the following few lines -
 %     header.excel_sheet = fullfile(dropbox_link,'Nir_Lab','Work', PtEntry.excel_sheet);
@@ -56,65 +85,36 @@ else % prepare dataset file
 %     elseif strcmp(PtEntry.spikesRecordingSys,'NLX')
 %         header.montage_sheet = sprintf('MicroMontage',PtEntry.Nsessions);
 %     end
-    header.macro_montage_sheet = 'MacroMontage';
+timestampsTable = readtable(fullfile('E:\MAZE\ptData\',sprintf('%s_timestamp_table.csv',subj)));
+
+
     EXP_DATA.LINE_FREQUENCY = 60;
-    EXP_DATA.ELECTRODES = PtEntry.Nelectrodes;
     
-    if isfield(PtEntry,'stimType')
-        EXP_DATA.stimType = PtEntry.stimType;
-    end
-    % Run pre-processing
-    if strcmp(PtEntry.spikesRecordingSys,'BR')
-        preProcessScript__BR
-    elseif strcmp(PtEntry.spikesRecordingSys,'NLX')
-        preProcessScript__NLX
-    end
-    
-    % Experiment specific timestamp -
-    
-    END_REAL_STIM_SEC = [];
-    EXP_DATA.MICRO_stim_timing_MICRO_SR = header.MICRO_stim_timing_MICRO_SR;
-    EXP_DATA.END_REAL_STIM_SEC = PtEntry.END_REAL_STIM_SEC;
-    EXP_DATA.Session_start_end_msec = [];
-    EXP_DATA.Session_names = [];
-    
-    answer = input('define session times [1=maual,0=xls based]?');
-    if answer
-        % v1 - update session times manually - based on stimulations
-        manualEpochTimestampsUpdate()
-    else
-        % v0 - update based on XLS
-        for ii = 1:PtEntry.NsubParts
-            fldname = sprintf('p%dName',ii);
-            EXP_DATA.Session_names{ii} = PtEntry.(fldname);
-            fldname = sprintf('p%dStart',ii);
-            EXP_DATA.Session_start_end_msec(ii,1) = PtEntry.(fldname);
-            fldname = sprintf('p%dend',ii);
-            EXP_DATA.Session_start_end_msec(ii,2) = PtEntry.(fldname);
-        end
-    end
-    
-    if isfield(PtEntry,'stimType')
-        EXP_DATA.STIM_PARAMS.singleTrainWidthmsec = PtEntry.StimParameters_TrainWidthms;
-        EXP_DATA.STIM_PARAMS.pulses = PtEntry.StimParameters_Pulses;
-        EXP_DATA.STIM_PARAMS.amp1 = PtEntry.StimParameters_Amp;
-        EXP_DATA.STIM_PARAMS.freq = PtEntry.StimParameters_Freq; % Hz
-        EXP_DATA.STIM_PARAMS.singlePulse = PtEntry.StimParameters_singlePulse;
-        EXP_DATA.STIM_PARAMS.comment = [];
+    for ii = 1:3
+        rows = find(ismember(timestampsTable.Type , 'X') & ismember(timestampsTable.Repetition , ii)); 
+        EXP_DATA.timestamps_us.X{ii} = timestampsTable.Time_onset(rows);
         
-        EXP_DATA.stim_channels = PtEntry.uChannelCloseToStimulationSite; % uChannels
-        EXP_DATA.stim_channels_macro = PtEntry.StimulatingElectrodeMacroMontage; % macroChannels montage (Kirk)
+        rows = find(ismember(timestampsTable.Type , 'G') & ismember(timestampsTable.Repetition , ii)); 
+        EXP_DATA.timestamps_us.G{ii} = timestampsTable.Time_onset(rows);
         
-        % find out stimuli location based on recorded data -
-        locateStimTiming()
-        EXP_DATA.stimVecCell = genStimVec(EXP_DATA); % actual stim times or random ones for control sessions
+        rows = find(ismember(timestampsTable.Type , 'D') & ismember(timestampsTable.Repetition , ii)); 
+        EXP_DATA.timestamps_us.D{ii} = timestampsTable.Time_onset(rows);
+        
+        rows = find(ismember(timestampsTable.Type , 'N') & ismember(timestampsTable.Repetition , ii)); 
+        EXP_DATA.timestamps_us.N{ii} = timestampsTable.Time_onset(rows);
     end
+    
+    % Focus on memorized mazes
+    rows = find(ismember(timestampsTable.Test_contextual_success ,1) ); 
+    EXP_DATA.succsesful_maze = unique(timestampsTable.Maze(rows));
+    
     
     filename = fullfile(header.processedDataPath,sprintf('%s_EXP%d_dataset.mat',header.id,header.experimentNum));
     save(filename,'header','EXP_DATA')
-    
-    
+ 
 end
+
+return
 
 whatToDo = questdlg('Would you like to extract data files?','extract?','NS3','NS5','NO','NO');
 if strcmp(whatToDo,'NS3')

@@ -1,11 +1,11 @@
 % spike-sorting script
-function spikeSort_maze(subj,exp)
+function spikeSort_maze(pt,exp)
 
 DEBUG = 0;
 
 dropboxLink()
 
-header = getmemMazeExperimentHeader(subj,exp);
+header = getmemMazeExperimentHeader(pt,exp);
 datasetFilename = fullfile(header.processedDataPath,sprintf('%s_EXP%d_dataset.mat',header.id,header.experimentNum));
 a = dir(datasetFilename);
 if ~isempty(a)
@@ -125,7 +125,7 @@ end
 if DEBUG
 %% Compare original data to avergedREf
 figure
-MICRO_SR = 40e4;
+MICRO_SR = 32e3;
 buffer = 10*MICRO_SR;
 shift = 100;
 % pt 496

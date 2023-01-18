@@ -7,7 +7,7 @@ dropboxLink
 cd(fullfile(dropbox_link,'Code\Nir Lab'))
 MatlabPathMaya();
 
-pt = 'pda018';
+pt = 'da018';
 exp = 1;
 header = getmemMazeExperimentHeader(pt,exp);
 
@@ -56,30 +56,36 @@ for ii = 1:length(fileList)
 end
 
 
-%% Read (manually set) montage from XLS - based on blue lab notebook --> mat file
-macroMontageSheet = header.macro_montage_sheet;
-p_in.numeric_fields = {'Channel','Electrode_number'}; % numeric fields in excel
-cell_rows = 1:EXP_DATA.ELECTRODES*8+8;
-MacroMontage= [];
+% Rename channels based on macroMontage
 
-if strfind(header.id,'p') % manual montage for UCLA patients
-    MacroMontage = read_excel_sheet(header.excel_sheet,macroMontageSheet,cell_rows,p_in.numeric_fields,p_in);
+mm = matfile(header.macroMontagePath);
+MacroMontage = mm.MacroMontage;
+
+list = dir(fullfile(outputFolder,'*.mat'));
+
+for iif = 1:length(list)
+    filename = list(iif).name;
+    electName = filename(5:end-8);
     
-    % get rid of empty entries
-    ii = length(MacroMontage);
+    % parse the elec name
+    areaName = electName(1:end-1);
+    index = str2num(electName(end));
+    if strcmp(areaName(end),'1')
+        areaName = electName(1:end-2);
+        index = str2num(electName(end-1:end));
+    end
+        
+    chInd = []; cnt = 1;
     while(1)
-        if isempty(MacroMontage(ii).Area)
-            MacroMontage(ii) = [];
-            disp(sprintf('removed entry %d',ii))
-        else
+        a = strcmp(MacroMontage(cnt).Area,areaName);
+        if a
+            chInd = cnt + index - 1;
+            fprintf('rename %s to %s\n',fullfile(outputFolder,filename),fullfile(outputFolder,sprintf('CSC%d.mat',chInd)))
+            disp('')
+            movefile(fullfile(outputFolder,filename),fullfile(outputFolder,sprintf('CSC%d.mat',chInd)));
+            cnt = 0; clear chInd
             break
         end
-        ii = ii - 1;
+        cnt = cnt + 1;
     end
-    if isempty(dir(header.root_data))
-        mkdir(header.root_data)
-    end
-    save(header.macroMontagePath,'MacroMontage')
 end
-
-%%

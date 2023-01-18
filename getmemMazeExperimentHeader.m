@@ -7,6 +7,7 @@ header.id = patientId;
 if strfind(hostname, 'cns-cdkngw2')
     root_data_general = 'E:\MAZE\Data_p\MACRO_MONTAGE';
     root_datap_general = 'E:\MAZE\Data_p';
+    root_ptData = 'E:\MAZE\ptData';
 elseif strfind(hostname, 'Laptop')
     root_data_general = 'C:\Users\MAZE\Data\';
     root_datap_general =  'C:\Users\MAZE\Data_p\';
@@ -21,8 +22,8 @@ if nargin==2
 end
 
 header.experimentNum = experimentNum;
-root_data = fullfile(root_data_general, sprintf('%s',patientId),sprintf('EXP%d',experimentNum));
-root_processed = fullfile(root_datap_general, sprintf('%s',patientId),sprintf('EXP%d',experimentNum));
+root_data = fullfile(root_data_general, sprintf('p%s',patientId),sprintf('EXP%d',experimentNum));
+root_processed = fullfile(root_datap_general, sprintf('p%s',patientId),sprintf('EXP%d',experimentNum));
 header.root_data = root_data;
 header.isAutoMontage = false;
 header.microMontagePath = fullfile(root_data,'microMontage.mat');
@@ -32,6 +33,7 @@ header.figuresDataPath =  fullfile(root_processed,'figures');
 header.spikesDataPath = fullfile(root_processed,'spikeSorting');
 header.processed_MACRO = fullfile(root_processed,'Denoised_Downsampled_InMicroVolt','MACRO');
 header.processed_MICRO = fullfile(root_processed,'Denoised_Downsampled_InMicroVolt','MICRO');
+header.excel_sheet = fullfile(root_ptData,sprintf('%s.xls',patientId));
 if isempty(header.figuresDataPath); mkdir(header.figuresDataPath); end
 if isempty(header.processed_MACRO); mkdir(header.processed_MACRO); end
 if isempty(header.processed_MICRO); mkdir(header.processed_MICRO); end
@@ -39,34 +41,26 @@ if isempty(header.spikesDataPath); mkdir(header.spikesDataPath); end
 
 %%---------------------------------------------------------------------------------------------%%
 
-if (strcmp(lower(patientId),'da017')) % Feb 25th 2016 at Ichilov, pre-defined MACRO Stimulation during Nap - Firas and Yuval
-    if isAwake
-    else
+if (strcmp(lower(patientId),'da017')) 
         if (experimentNum==1)
             header.StimExp = 1; % default
-            header.StimType = 'MACRO';
-            
-            header.nsFilePath{Index.MACRO} = '';
-            header.nsFormat{Index.MACRO} = 'ns3';
-            header.channelsVec{Index.MACRO} = 1:99;
-            header.denoisedChannelsPath{Index.MACRO} = '';
-            header.dataIndexInNsFile{Index.MACRO} = 2; % index of biggest data chunk
-            
-            header.nsFilePath{Index.MICRO} = '';
-            header.nsFormat{Index.MICRO} = 'ns5';
-            header.channelsVec{Index.MICRO} = 1:88;
-            header.denoisedChannelsPath{Index.MICRO} = '';
-            header.dataIndexInNsFile{Index.MICRO} = 2; % index of biggest data chunk
-            
+               
             header.nevFilePath = '';
             
             header.SpikeSortingXLS = ''; % all identified units
             
         end
-    end
- 
+        
 
-
+elseif (strcmp(lower(patientId),'da018')) 
+        if (experimentNum==1)
+            header.StimExp = 1; % default
+               
+            header.nevFilePath = '';
+            
+            header.SpikeSortingXLS = ''; % all identified units
+            
+        end        
 else 
     
     header.isValid = false;

@@ -7,7 +7,7 @@ dropboxLink
 cd(fullfile(dropbox_link,'Code\Nir Lab'))
 MatlabPathMaya();
 
-pt = 'pda018';
+pt = 'da018';
 exp = 1;
 header = getmemMazeExperimentHeader(pt,exp);
 
@@ -56,58 +56,29 @@ for ii = 1:length(fileList)
 end
 
 
-%% Read (manually set) montage from XLS - based on blue lab notebook --> mat file
-macroMontageSheet = header.macro_montage_sheet;
-p_in.numeric_fields = {'Channel','Electrode_number'}; % numeric fields in excel
-cell_rows = 1:EXP_DATA.ELECTRODES*8+8;
-MacroMontage= [];
+% Rename channels based on macroMontage
 
-if strfind(header.id,'p') % manual montage for UCLA patients
-    MacroMontage = read_excel_sheet(header.excel_sheet,macroMontageSheet,cell_rows,p_in.numeric_fields,p_in);
-    
-    % get rid of empty entries
-    ii = length(MacroMontage);
+mm = matfile(header.macroMontagePath);
+MacroMontage = mm.MacroMontage;
+
+list = dir(fullfile(outputFolder,'*.mat'));
+
+for iif = 1:length(list)
+    filename = list(iif).name;
+    electName = filename(5:end-8);
+    chInd = []; cnt = 1;
     while(1)
-        if isempty(MacroMontage(ii).Area)
-            MacroMontage(ii) = [];
-            disp(sprintf('removed entry %d',ii))
-        else
+        areaName = electName(1:end-1);
+        if isnumeric(str2num(areaName(end)))
+        a = strcmp(MacroMontage(cnt).Area,electName(1:end-1));
+        if a
+            chInd = cnt + str2num(electName(end)) - 1;
+            fprintf('rename %s to %s\n',fullfile(outputFolder,filename),fullfile(outputFolder,sprintf('CSC%d.mat',chInd)))
+            disp('')
+            % movefile(fullfile(outputFolder,filename),fullfile(outputFolder,sprintf('CSC%d.mat',chInd)));
+            cnt = 0; clear chInd
             break
         end
-        ii = ii - 1;
+        cnt = cnt + 1;
     end
-    if isempty(dir(header.root_data))
-        mkdir(header.root_data)
-    end
-    save(header.macroMontagePath,'MacroMontage')
-end
-
-%%
-header.excel_sheet = 'E:\MAZE\ptData\da17.xls';
-header.micro_montage_sheet = 'microMontage';
-EXP_DATA.MICRO_ELECTRODES = 2;
-
-microMontageSheet = header.micro_montage_sheet;
-p_in.numeric_fields = {'Channel'}; % numeric fields in excel
-cell_rows = 1:EXP_DATA.MICRO_ELECTRODES*8+8;
-MacroMontage= [];
-
-if strfind(header.id,'p') % manual montage for UCLA patients
-    MacroMontage = read_excel_sheet(header.excel_sheet,macroMontageSheet,cell_rows,p_in.numeric_fields,p_in);
-    
-    % get rid of empty entries
-    ii = length(MacroMontage);
-    while(1)
-        if isempty(MacroMontage(ii).Area)
-            MacroMontage(ii) = [];
-            disp(sprintf('removed entry %d',ii))
-        else
-            break
-        end
-        ii = ii - 1;
-    end
-    if isempty(dir(header.root_data))
-        mkdir(header.root_data)
-    end
-    save(header.macroMontagePath,'MacroMontage')
 end

@@ -7,9 +7,11 @@ dropboxLink
 cd(fullfile(dropbox_link,'Code\Nir Lab'))
 MatlabPathMaya();
 
-pt = 'pDA017';
+pt = 'da017';
 exp = 1;
 header = getmemMazeExperimentHeader(pt,exp);
+
+preProcessDepthUCD(pt,exp)
 
 poolobj = gcp('nocreate'); % If no pool, do not create new one.
 if isempty(poolobj)
@@ -17,6 +19,10 @@ if isempty(poolobj)
 else
     poolsize = poolobj.NumWorkers;
 end
+
+datasetFilename = fullfile(header.processedDataPath,sprintf('p%s_EXP%d_dataset.mat',pt,exp));
+load(datasetFilename)
+
 
 dataFolder = 'E:\MY_BACKUP\UCD_raw_datasets\PATIENT DATA\DA17\Maze_Maya\';
 outputFolder = header.processed_MACRO;
@@ -40,6 +46,41 @@ parfor ii = 1:length(Ch_name)
     getRawCSCSingleFile__NLX(header, dataFolder, outputFolder, fileList, Ch_name{ii}, PROCESS)    
 end
 
+% Rename channels based on macroMontage
+mm = matfile(header.macroMontagePath);
+MacroMontage = mm.MacroMontage;
+
+list = dir(fullfile(outputFolder,'*.mat'));
+
+for iif = 1:length(list)
+    filename = list(iif).name;
+    electName = filename(5:end-8);
+    
+    % parse the elec name
+    areaName = electName(1:end-1);
+    index = str2num(electName(end));
+    if strcmp(areaName(end),'1')
+        areaName = electName(1:end-2);
+        index = str2num(electName(end-1:end));
+    end
+        
+    chInd = []; cnt = 1;
+    while(cnt < length(MacroMontage(cnt).Area))
+        a = strcmp(MacroMontage(cnt).Area,areaName);
+        if a
+            chInd = cnt + index - 1;
+            fprintf('rename %s to %s\n',fullfile(outputFolder,filename),fullfile(outputFolder,sprintf('CSC%d.mat',chInd)))
+            disp('')
+            movefile(fullfile(outputFolder,filename),fullfile(outputFolder,sprintf('CSC%d.mat',chInd)));
+            cnt = 0; clear chInd
+            break
+        end
+        cnt = cnt + 1;
+    end
+end
+
+
+%% 
 %%
 header.excel_sheet = 'E:\MAZE\ptData\da17.xlsx';
 header.micro_montage_sheet = 'microMontage';
