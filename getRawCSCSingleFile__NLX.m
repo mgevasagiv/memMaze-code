@@ -1,3 +1,4 @@
+% Maya GS 
 function getRawCSCSingleFile__NLX(header, dataFolder, outputFolder, files, Ch_name, PROCESS, target_folder_DOWNSAMPLE, details)
 
 if PROCESS(1)

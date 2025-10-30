@@ -1,3 +1,5 @@
+addpath('C:\Users\mgeva\Documents\GitHub\closedLoop-pub\iEEG_preProcessTools')
+addpath('C:\Users\mgeva\Documents\GitHub\closedLoop-code\epilepticActivity_IEEG-code')
 bc = BadChannels;
 
 % Example - 
@@ -82,3 +84,173 @@ bc.saveEDF(61:100, 'pda017_EXP1_ch61_100')
 disp(subj);
 
 
+%% -- MAZE pt
+bc = BadChannels;
+
+subj = 'da018';
+exp = 1;
+processedDataPath = 'E:\MAZE\data_p\pda018\EXP1\';
+bc.sourceFolderMacro = fullfile(processedDataPath, '\Denoised_Downsampled_InMicroVolt\MACRO');
+bc.macroMontageFileName = 'E:\MAZE\data_p\MACRO_MONTAGE\pda018\EXP1\MacroMontage.mat';
+
+datasetFilename = fullfile(processedDataPath,sprintf('p%s_EXP%d_dataset.mat',subj,exp));
+bc.loadHeaderExpData(datasetFilename);
+
+bc.spikeResultsFileName = fullfile(bc.sourceFolderMacro, 'spikesResultsHigh','SpikesResults');
+bc.spikeFileName = '\spikesResults\SpikesResults';
+bc.saveSpikesResults;
+[sida018,srda018] = bc.findHighSpikes;
+
+bc.saveEDF(1:20, 'pda018_EXP1_ch1_20')
+bc.saveEDF(21:60, 'pda018_EXP1_ch21_60')
+bc.saveEDF(61:100, 'pda018_EXP1_ch61_100')
+bc.saveEDF(61:100, 'pda018_EXP1_ch101_126')
+disp(subj);
+
+
+%% -- MAZE pt
+bc = BadChannels;
+
+subj = 'da019';
+exp = 1;
+processedDataPath = 'E:\MAZE\data_p\pda019\EXP1\';
+bc.sourceFolderMacro = fullfile(processedDataPath, '\Denoised_Downsampled_InMicroVolt\MACRO');
+bc.macroMontageFileName = 'E:\MAZE\data_p\MACRO_MONTAGE\pda019\EXP1\MacroMontage.mat';
+
+datasetFilename = fullfile(processedDataPath,sprintf('p%s_EXP%d_dataset.mat',subj,exp));
+bc.loadHeaderExpData(datasetFilename);
+
+bc.spikeResultsFileName = fullfile(bc.sourceFolderMacro, 'spikesResultsHigh','SpikesResults');
+bc.spikeFileName = '\spikesResults\SpikesResults';
+bc.saveSpikesResults;
+[sida019,srda019] = bc.findHighSpikes;
+
+bc.saveEDF(1:20, 'pda019_EXP1_ch1_20')
+bc.saveEDF(21:60, 'pda019_EXP1_ch21_60')
+bc.saveEDF(61:102, 'pda019_EXP1_ch61_102')
+disp(subj);
+
+%% -- MAZE pt
+bc = BadChannels;
+
+subj = 'da019';
+exp = 2;
+processedDataPath = 'E:\MAZE\data_p\pda019\EXP2\';
+bc.sourceFolderMacro = fullfile(processedDataPath, '\Denoised_Downsampled_InMicroVolt\MACRO');
+bc.macroMontageFileName = 'E:\MAZE\data_p\MACRO_MONTAGE\pda019\EXP2\MacroMontage.mat';
+
+datasetFilename = fullfile(processedDataPath,sprintf('p%s_EXP%d_dataset.mat',subj,exp));
+bc.loadHeaderExpData(datasetFilename);
+
+bc.spikeResultsFileName = fullfile(bc.sourceFolderMacro, 'spikesResultsHigh','SpikesResults');
+bc.spikeFileName = '\spikesResults\SpikesResults';
+bc.samplerate = 512;
+bc.saveSpikesResults;
+[sida019,srda019] = bc.findHighSpikes;
+
+bc.saveEDF(1:20, 'pda019_EXP1_ch1_20')
+bc.saveEDF(21:60, 'pda019_EXP1_ch21_60')
+bc.saveEDF(61:102, 'pda019_EXP1_ch61_102')
+disp(subj);
+
+
+%% -- MAZE pt
+bc = BadChannels;
+
+subj = 'da022';
+exp = 1;
+processedDataPath = 'E:\MAZE\data_p\pda022\EXP1\';
+bc.sourceFolderMacro = fullfile(processedDataPath, '\Denoised_Downsampled_InMicroVolt\MACRO');
+bc.macroMontageFileName = 'E:\MAZE\data_p\MACRO_MONTAGE\pda022\EXP1\MacroMontage.mat';
+
+datasetFilename = fullfile(processedDataPath,sprintf('p%s_EXP%d_dataset.mat',subj,exp));
+bc.loadHeaderExpData(datasetFilename);
+
+bc.spikeResultsFileName = fullfile(bc.sourceFolderMacro, 'spikesResultsHigh','SpikesResults');
+bc.spikeFileName = '\spikesResults\SpikesResults';
+bc.samplerate = 1e3;
+bc.saveSpikesResults;
+[sida022,srda022] = bc.findHighSpikes;
+
+disp(subj);
+
+%% -- MAZE pt
+bc = BadChannels;
+
+subj = 'da023';
+exp = 1;
+processedDataPath = 'E:\MAZE\data_p\pda023\EXP1\';
+bc.sourceFolderMacro = fullfile(processedDataPath, '\Denoised_Downsampled_InMicroVolt\MACRO');
+bc.macroMontageFileName = 'E:\MAZE\data_p\MACRO_MONTAGE\pda023\EXP1\MacroMontage.mat';
+
+datasetFilename = fullfile(processedDataPath,sprintf('p%s_EXP%d_dataset.mat',subj,exp));
+bc.loadHeaderExpData(datasetFilename);
+
+bc.spikeResultsFileName = fullfile(bc.sourceFolderMacro, 'spikesResultsHigh','SpikesResults');
+bc.spikeFileName = '\spikesResults\SpikesResults';
+bc.samplerate = 1e3;
+bc.saveSpikesResults;
+[sida023,srda023] = bc.findHighSpikes;
+
+disp(subj);
+
+
+%% -- MAZE pt
+bc = BadChannels;
+
+subj = 'da023';
+exp = 1;
+processedDataPath = 'E:\MAZE\data_p\pda023\EXP1\';
+bc.sourceFolderMacro = fullfile(processedDataPath, '\Denoised_Downsampled_InMicroVolt\MACRO');
+bc.macroMontageFileName = 'E:\MAZE\data_p\MACRO_MONTAGE\pda023\EXP1\MacroMontage.mat';
+
+datasetFilename = fullfile(processedDataPath,sprintf('p%s_EXP%d_dataset.mat',subj,exp));
+bc.loadHeaderExpData(datasetFilename);
+
+bc.spikeResultsFileName = fullfile(bc.sourceFolderMacro, 'spikesResultsHigh','SpikesResults');
+bc.spikeFileName = '\spikesResults\SpikesResults';
+bc.samplerate = 1e3;
+bc.saveSpikesResults;
+[sida023,srda023] = bc.findHighSpikes;
+
+disp(subj);
+
+%% -- MAZE pt
+bc = BadChannels;
+
+subj = 'da026';
+exp = 1;
+processedDataPath = 'E:\MAZE\data_p\pda026\EXP1\';
+bc.sourceFolderMacro = fullfile(processedDataPath, '\Denoised_Downsampled_InMicroVolt\MACRO');
+bc.macroMontageFileName = 'E:\MAZE\data_p\MACRO_MONTAGE\pda026\EXP1\MacroMontage.mat';
+
+datasetFilename = fullfile(processedDataPath,sprintf('p%s_EXP%d_dataset.mat',subj,exp));
+bc.loadHeaderExpData(datasetFilename);
+
+bc.spikeResultsFileName = fullfile(bc.sourceFolderMacro, 'spikesResultsHigh','SpikesResults');
+bc.spikeFileName = '\spikesResults\SpikesResults';
+bc.samplerate = 1e3;
+bc.saveSpikesResults; 
+[sida026,srda026] = bc.findHighSpikes;
+
+disp(subj);
+
+%% -- MAZE pt
+bc = BadChannels;
+
+subj = 'ir103';
+exp = 1;
+processedDataPath = 'E:\MAZE\data_p\pir103\EXP1\';
+bc.sourceFolderMacro = fullfile(processedDataPath, '\Denoised_Downsampled_InMicroVolt\MACRO');
+bc.macroMontageFileName = ['E:\MAZE\data_p\MACRO_MONTAGE\p',subj,'\EXP1\MacroMontage.mat'];
+
+datasetFilename = fullfile(processedDataPath,sprintf('p%s_EXP%d_dataset.mat',subj,exp));
+bc.loadHeaderExpData(datasetFilename);
+
+bc.spikeResultsFileName = fullfile(bc.sourceFolderMacro, 'spikesResultsHigh','SpikesResults');
+bc.spikeFileName = '\spikesResults\SpikesResults';
+bc.samplerate = 1e3;
+bc.saveSpikesResults; 
+[sid,srd] = bc.findHighSpikes;
+
+disp(subj);

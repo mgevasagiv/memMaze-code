@@ -1,4 +1,4 @@
-% Pt DA018, MAZE Paradigm
+% Pt DA023, MAZE Paradigm
 % **************************************************************************** %
 %% 1 - Extract NLX MICRO channels, merge files to one joint file named CSC1-80, 
 % create averaged version and spike-sort this version 
@@ -7,7 +7,7 @@ dropboxLink
 cd(fullfile(dropbox_link,'Code\Nir Lab'))
 MatlabPathMaya();
 
-pt = 'da018';
+pt = 'da023';
 exp = 1;
 header = getmemMazeExperimentHeader(pt,exp);
 preProcessDepthUCD(pt,exp)
@@ -19,27 +19,14 @@ else
     poolsize = poolobj.NumWorkers;
 end
 
-dataFolder = 'E:\MY_BACKUP\UCD_raw_datasets\PATIENT DATA\DA18\Maze_Maya\';
+dataFolder = 'E:\MY_BACKUP\UCD_raw_datasets\PATIENT DATA\';
 
-outputFolder = header.processed_MACRO;
-Ch_name{1} = 'RASL';
-Ch_name{2} = 'RAIL';
-Ch_name{3} = 'RPIL';
-Ch_name{4} = 'RPSL';
-Ch_name{5} = 'RMC';
-Ch_name{6} = 'RAC';
-Ch_name{7} = 'LAC';
-Ch_name{8} = 'LAMC';
-Ch_name{9} = 'LPMC';
-Ch_name{10} = 'PHOTODIODE';
-Ch_name{11} = 'AUDIO';
-
-edfFilename = 'E:\MY_BACKUP\UCD_raw_datasets\PATIENT DATA\DA18\EPHYS_Natus\Maya_Maze\DA018.edf';
+edfFilename = 'E:\MY_BACKUP\UCD_raw_datasets\PATIENT DATA\DA23\DA23_Maze.EDF';
 [edfHdr] = ft_read_header(edfFilename);
 outputFolder = header.processed_MACRO;
 
 parfor ch_id = 1:length(edfHdr.label)
-    if ~contains(edfHdr.label{ch_id},'eeg','IgnoreCase',true); continue; end
+    % if ~contains(edfHdr.label{ch_id},'eeg','IgnoreCase',true); continue; end
     readEdfChannelLocal(edfFilename,edfHdr,ch_id,outputFolder)  
 end
 
@@ -47,7 +34,7 @@ fileList = dir([outputFolder,'\','*.mat']);
 for ii = 1:length(fileList)
         mm = matfile(fullfile(outputFolder,fileList(ii).name),'Writable',true);
         fline = 60; % Data recorded in the US
-        samplingRateHz = 1e3;
+        samplingRateHz = edfHdr.Fs;
         denoised = remove_line_noise(mm.data,fline, samplingRateHz);
         mm.data = denoised;        
         mm.CSC_Sampling_Rate_Hz = samplingRateHz;
@@ -55,7 +42,6 @@ end
 
 
 % Rename channels based on macroMontage
-
 mm = matfile(header.macroMontagePath);
 MacroMontage = mm.MacroMontage;
 
@@ -63,16 +49,34 @@ list = dir(fullfile(outputFolder,'*.mat'));
 
 for iif = 1:length(list)
     filename = list(iif).name;
-    electName = filename(5:end-8);
+    electName = filename(1:end-4);
     
-    % parse the elec name
-    areaName = electName(1:end-1);
-    index = str2num(electName(end));
-    if strcmp(areaName(end),'1')
+    if(strfind(filename,'-'))
+        % parse the elec name
+        doubleDigit = false;
         areaName = electName(1:end-2);
-        index = str2num(electName(end-1:end));
+        if strcmp(areaName(end),'-')
+            areaName = electName(1:end-3);
+            doubleDigit = true;
+        end
+        if ~doubleDigit
+            index = str2num(electName(end));
+        else
+            index = str2num(electName(end-1:end));
+        end
+    else
+        doubleDigit = false;
+        areaName = electName(1:end-1);
+        if strcmp(areaName(end),'1')
+            areaName = electName(1:end-2);
+            doubleDigit = true;
+        end
+        if ~doubleDigit
+            index = str2num(electName(end));
+        else
+            index = str2num(electName(end-1:end));
+        end
     end
-        
     chInd = []; cnt = 1;
     while(1)
         a = strcmp(MacroMontage(cnt).Area,areaName);
@@ -86,4 +90,15 @@ for iif = 1:length(list)
         end
         cnt = cnt + 1;
     end
+end
+
+list = dir(fullfile(outputFolder,'CSC*.mat'));
+LFP_SamplingRate_Hz = 1000;
+for ii = 1:length(list)
+    mm = matfile(fullfile(outputFolder, list(ii).name),'Writable',true);
+    if mm.CSC_Sampling_Rate_Hz == LFP_SamplingRate_Hz; continue; end
+    data = accurateResampling(mm.data, mm.CSC_Sampling_Rate_Hz, LFP_SamplingRate_Hz);
+    mm.data = data;
+    mm.CSC_Sampling_Rate_Hz = LFP_SamplingRate_Hz;
+    clear mm
 end

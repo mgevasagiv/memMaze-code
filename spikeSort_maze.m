@@ -11,7 +11,7 @@ a = dir(datasetFilename);
 if ~isempty(a)
     
     load(datasetFilename)
-    load(fullfile(header.montagePath))
+    load(fullfile(header.microMontagePath))
 end
 
 whatToDo = questdlg('Select input source?','source','AveragedRef','RAW','RAW');

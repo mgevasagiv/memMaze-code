@@ -17,7 +17,7 @@ else
 end
 
 %if no experiment num than this is the default is the first experiment
-if nargin==2
+if nargin==1
     experimentNum = 1;
 end
 
@@ -60,7 +60,100 @@ elseif (strcmp(lower(patientId),'da018'))
             
             header.SpikeSortingXLS = ''; % all identified units
             
-        end        
+        end
+        
+elseif (strcmp(lower(patientId),'da022'))
+    if (experimentNum==1)
+        header.StimExp = 1; % default
+        
+        header.nevFilePath = '';
+        
+        header.SpikeSortingXLS = ''; % all identified units
+        
+    end
+    
+elseif (strcmp(lower(patientId),'da023'))
+    if (experimentNum==1)
+        header.StimExp = 1; % default
+        
+        header.nevFilePath = '';
+        
+        header.SpikeSortingXLS = ''; % all identified units
+        
+    end
+
+elseif (strcmp(lower(patientId),'da026'))
+    if (experimentNum==1)
+        header.StimExp = 1; % default
+
+        header.nevFilePath = '';
+
+        header.SpikeSortingXLS = ''; % all identified units
+
+    end
+
+elseif (strcmp(lower(patientId),'da030'))
+    if (experimentNum==1)
+        header.StimExp = 1; % default
+        
+        header.nevFilePath = '';
+        
+        header.SpikeSortingXLS = ''; % all identified units
+        
+    end
+
+
+elseif (strcmp(lower(patientId),'da035'))
+    if (experimentNum==1)
+        header.StimExp = 1; % default
+        
+        header.nevFilePath = '';
+        
+        header.SpikeSortingXLS = ''; % all identified units
+        
+    end
+
+
+elseif (strcmp(lower(patientId),'da037'))
+    if (experimentNum==1)
+        header.StimExp = 1; % default
+        
+        header.nevFilePath = '';
+        
+        header.SpikeSortingXLS = ''; % all identified units
+        
+    end    
+
+    elseif (strcmp(lower(patientId),'da49'))
+    if (experimentNum==1)
+        header.StimExp = 1; % default
+        
+        header.nevFilePath = '';
+        
+        header.SpikeSortingXLS = ''; % all identified units
+        
+    end    
+
+    elseif (strcmp(lower(patientId),'da50'))
+    if (experimentNum==1)
+        header.StimExp = 1; % default
+        
+        header.nevFilePath = '';
+        
+        header.SpikeSortingXLS = ''; % all identified units
+        
+    end    
+
+elseif (strcmp(lower(patientId),'da052'))
+    if (experimentNum==1)
+        header.StimExp = 1; % default
+        
+        header.nevFilePath = '';
+        
+        header.SpikeSortingXLS = ''; % all identified units
+        
+    end    
+    
 else 
     
     header.isValid = false;

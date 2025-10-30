@@ -1,29 +1,32 @@
 function preProcessDepthUCD(subj,exp)
 
-dropboxLink()
-
+dropbox_link = 'E:\Dropbox\';
+% addpath('E:\Dropbox\Code\Nir Lab\Work\ONLINE_EEG_TRACKING_analysis')
 % Load header + EXP data once it's ready
 header = getmemMazeExperimentHeader(sprintf('%s',subj), exp);
-PtList = importXLSMazePatientList(fullfile(dropbox_link,'RanganathLab\work\mazeStudy\mazeSessions.xlsx')...
-    ,'Subjects',10);
+% PtList = importXLSMazePatientList('E:\NeurDrift\NeurDriftSessions.xlsx'...
+%             ,'Subjects',10);
+
+PtList = readtable('E:\Dropbox\RanganathLab\work\mazeStudy\mazeSessions.xlsx');   % For tabular data
+
 ptInd = [];
 
-for ii = 1:length(PtList)
-    if strcmp(PtList(ii).subj,subj)
-        if PtList(ii).exp == exp
+for ii = 1:length(PtList.subj)
+    if strcmp(PtList.subj(ii),subj)
+        if PtList.exp(ii) == exp
             ptInd = ii;
             break;
         end
     end
 end
 if isempty(ptInd)
-    disp('pt entry not found in closedLoop, searching general list')
-    PtList = importXLSClosedLoopPatientList(fullfile(dropbox_link,'Nir_Lab\Work\ExperimentalDataTracking.xlsx')...
-        ,'subjList',25);
+    disp('pt entry not found in xls, searching general list')
+    PtList = importXLSClosedLoopPatientList(fullfile(dropbox_link,'RanganathLab\work\mazeStudy\mazeSessions.xlsx')...
+        ,'subjects',25);
     ptInd = [];
     for ii = 1:length(PtList)
-        if PtList(ii).subj == subj;
-            if PtList(ii).Nsessions == exp
+        if strcmp(PtList(ii).subj,subj);
+            if PtList(ii).exp == exp
                 ptInd = ii;
                 break;
             end
@@ -42,7 +45,7 @@ if ~isempty(a)
     
     % Load MacroMontage
     % load(fullfile(header.macroMontagePath,'MacroMontage.mat'))
-
+    
     % Load spike data once it's available
     % load(fullfile(header.processed_AverageRef,sprintf('%s_spike_timestamps_post_processing',header.id)))
     
@@ -54,13 +57,14 @@ else % prepare dataset file
         MacroMontage= [];
         
         if strfind(header.id,'p') % manual montage for UCLA patients
-            cell_rows = 1:150;
-            MacroMontage = read_excel_sheet(header.excel_sheet,macroMontageSheet,cell_rows,p_in.numeric_fields,p_in);
-            
+            cell_rows = 1:250;
+            % MacroMontage = read_excel_sheet(header.excel_sheet,macroMontageSheet,cell_rows,p_in.numeric_fields,p_in);
+            MacroMontage = readtable(header.excel_sheet);   % For tabular data
+
             % get rid of empty entries
-            ii = length(MacroMontage);
+            ii = length(MacroMontage.Channel);
             while(1)
-                if isempty(MacroMontage(ii).Area)
+                if isempty(MacroMontage.Area(ii))
                     MacroMontage(ii) = [];
                     disp(sprintf('removed entry %d',ii))
                 else
@@ -77,41 +81,88 @@ else % prepare dataset file
     end
     %% This should be ran once for each session and saved for later usage
     %% Manually update the following few lines -
-%     header.excel_sheet = fullfile(dropbox_link,'Nir_Lab','Work', PtEntry.excel_sheet);
-%     header.spikesorting_sheet = PtEntry.spikesorting_sheet; % SpikeSorting Sheet in patient's xls
-%     header.N_spikeSortedCells = PtEntry.SpikeSortedUnits;
-%     if strcmp(PtEntry.spikesRecordingSys,'BR')
-%         header.montage_sheet = sprintf('MicroMontage_EXP%d',PtEntry.Nsessions);
-%     elseif strcmp(PtEntry.spikesRecordingSys,'NLX')
-%         header.montage_sheet = sprintf('MicroMontage',PtEntry.Nsessions);
-%     end
-timestampsTable = readtable(fullfile('E:\MAZE\ptData\',sprintf('%s_timestamp_table.csv',subj)));
-
-
+    %     header.excel_sheet = fullfile(dropbox_link,'Nir_Lab','Work', PtEntry.excel_sheet);
+    %     header.spikesorting_sheet = PtEntry.spikesorting_sheet; % SpikeSorting Sheet in patient's xls
+    %     header.N_spikeSortedCells = PtEntry.SpikeSortedUnits;
+    %     if strcmp(PtEntry.spikesRecordingSys,'BR')
+    %         header.montage_sheet = sprintf('MicroMontage_EXP%d',PtEntry.Nsessions);
+    %     elseif strcmp(PtEntry.spikesRecordingSys,'NLX')
+    %         header.montage_sheet = sprintf('MicroMontage',PtEntry.Nsessions);
+    %     end
+    if exp == 1
+        timestampsTable = readtable(fullfile('E:\MAZE\ptData\',sprintf('%s_timestamp_table.csv',subj)));
+    else
+        timestampsTable = readtable(fullfile('E:\MAZE\ptData\',sprintf('%s_e%d_timestamp_table.csv',subj,exp)));
+    end
+    
     EXP_DATA.LINE_FREQUENCY = 60;
     
     for ii = 1:3
-        rows = find(ismember(timestampsTable.Type , 'X') & ismember(timestampsTable.Repetition , ii)); 
+        rows = find(ismember(timestampsTable.Type , 'X') &ismember(timestampsTable.Repetition , ii) &...
+            ~ismember(timestampsTable.Block , [10 11 12]));
         EXP_DATA.timestamps_us.X{ii} = timestampsTable.Time_onset(rows);
         
-        rows = find(ismember(timestampsTable.Type , 'G') & ismember(timestampsTable.Repetition , ii)); 
+        rows = find(ismember(timestampsTable.Type , 'G') & ismember(timestampsTable.Repetition , ii)&...
+            ~ismember(timestampsTable.Block , [10 11 12]));
         EXP_DATA.timestamps_us.G{ii} = timestampsTable.Time_onset(rows);
         
-        rows = find(ismember(timestampsTable.Type , 'D') & ismember(timestampsTable.Repetition , ii)); 
+        rows = find(ismember(timestampsTable.Type , 'D') & ismember(timestampsTable.Repetition , ii)&...
+            ~ismember(timestampsTable.Block , [10 11 12]));
         EXP_DATA.timestamps_us.D{ii} = timestampsTable.Time_onset(rows);
         
-        rows = find(ismember(timestampsTable.Type , 'N') & ismember(timestampsTable.Repetition , ii)); 
+        rows = find(ismember(timestampsTable.Type , 'N') & ismember(timestampsTable.Repetition , ii)&...
+            ~ismember(timestampsTable.Block , [10 11 12]));
         EXP_DATA.timestamps_us.N{ii} = timestampsTable.Time_onset(rows);
     end
     
+    for ii = 1:3
+        rows = find(ismember(timestampsTable.Type , 'X') &ismember(timestampsTable.Repetition , ii) &...
+            ismember(timestampsTable.Block , [10 11 12]));
+        EXP_DATA.timestamps_us.X_B4{ii} = timestampsTable.Time_onset(rows);
+        
+        rows = find(ismember(timestampsTable.Type , 'G') & ismember(timestampsTable.Repetition , ii)&...
+            ismember(timestampsTable.Block , [10 11 12]));
+        EXP_DATA.timestamps_us.G_B4{ii} = timestampsTable.Time_onset(rows);
+        
+        rows = find(ismember(timestampsTable.Type , 'D') & ismember(timestampsTable.Repetition , ii)&...
+            ismember(timestampsTable.Block , [10 11 12]));
+        EXP_DATA.timestamps_us.D_B4{ii} = timestampsTable.Time_onset(rows);
+        
+        rows = find(ismember(timestampsTable.Type , 'N') & ismember(timestampsTable.Repetition , ii)&...
+            ismember(timestampsTable.Block , [10 11 12]));
+        EXP_DATA.timestamps_us.N_B4{ii} = timestampsTable.Time_onset(rows);
+    end
+    
+    str = 'test';
+    testing_indices = find(~isnan(timestampsTable.Test_contextual_success));
+    correctTest = timestampsTable.Test_contextual_success(testing_indices) == 1;
+    inCorrectTest = timestampsTable.Test_contextual_success(testing_indices) == 0;
+    onset_testing_c = timestampsTable.Time_onset(testing_indices(correctTest)-1);
+    offset_testing_c = timestampsTable.Time_offset(testing_indices(correctTest)-1);
+    onset_set = onset_testing_c;
+    offset_set = offset_testing_c;
+    
+    EXP_DATA.onset_testing_correct = onset_set;
+    EXP_DATA.offset_testing_correct = offset_set;
+    
+    str = 'nc_test';
+    NC_testing_indices = find(~isnan(timestampsTable.Test_non_contextual_success));
+    correctTest = timestampsTable.Test_non_contextual_success(NC_testing_indices) == 1;
+    onset_NC_testing_c = timestampsTable.Time_onset(NC_testing_indices(correctTest)-1);
+    offset_NC_testing_c = timestampsTable.Time_offset(NC_testing_indices(correctTest)-1);
+    onset_set = onset_NC_testing_c;
+    offset_set = offset_NC_testing_c;
+    EXP_DATA.onset_testing_incorrect = onset_set;
+    EXP_DATA.offset_testing_incorrect = offset_set;
+
     % Focus on memorized mazes
-    rows = find(ismember(timestampsTable.Test_contextual_success ,1) ); 
+    rows = find(ismember(timestampsTable.Test_contextual_success ,1) );
     EXP_DATA.succsesful_maze = unique(timestampsTable.Maze(rows));
     
     
     filename = fullfile(header.processedDataPath,sprintf('%s_EXP%d_dataset.mat',header.id,header.experimentNum));
     save(filename,'header','EXP_DATA')
- 
+    
 end
 
 return
@@ -149,7 +200,7 @@ elseif strcmp(whatToDo,'NS5')
     
     %% Generate denoised with an average reference for ripple detection (NO High pass filtering)
     whatToDo = questdlg('Would you like to calc averaged ref for all electrodes?','REF?','ALL','PARTIAL','ALL');
-     
+    
     source_folder = header.spikesDataPath;
     target_folder = header.processed_AverageRef;
     if (isempty(dir(target_folder)))
@@ -199,11 +250,11 @@ if strcmp(whatToDo,'YES')
         mLink = matfile(fullfile(source_folder,sprintf('CSC%d.mat',channel_id) ));
         % data = resample(mLink.data,Consts.DOWNSAMPLED_FREQUENCY,header.MICRO_Sampling_Rate_Hz);
         data = accurateResampling(mLink.data,header.MICRO_Sampling_Rate_Hz,Consts.DOWNSAMPLED_FREQUENCY); % July 2018 - upgrading to better resampling
-
+        
         filename = fullfile(target_folder,sprintf('CSC%d.mat',channel_id));
         LocalHeader.samplingRate = Consts.DOWNSAMPLED_FREQUENCY;
         LocalHeader.channel_id = channel_id;
-        LocalHeader.label = microMontage(channel_id).Area;  
+        LocalHeader.label = microMontage(channel_id).Area;
         LocalHeader.samplerate = Consts.DOWNSAMPLED_FREQUENCY;
         save(filename,'data','header','LocalHeader')
     end
@@ -278,7 +329,7 @@ if strcmp(whatToDo,'YES')
         else
             mergeFiles = 0;
         end
-      
+        
         getSpikesMaya(source_dir, channels(ii),mergeFiles,header.MICRO_Sampling_Rate_Hz ); % Notice SR should be updated for NLX files
         doClusteringMaya(source_dir, channels(ii),header.MICRO_Sampling_Rate_Hz ); % Notice SR should be updated for NLX files
         close all
@@ -288,7 +339,7 @@ if strcmp(whatToDo,'YES')
     EDIT_SPIKE_FILES = 1;
     spikeSortingDir = source_dir;
     spikeCoincidenceDetection(spikeSortingDir, channels, EDIT_SPIKE_FILES)
-        
+    
     header.SpikeSortingParams = []; % Need to load these values
     
 end
@@ -333,7 +384,7 @@ if strcmp(whatToDo,'YES')
     micro_channels_spike_summary.spikesorting_sheet = header.spikesorting_sheet;
     micro_channels_spike_summary.spike_shapes_mean = spike_shapes_mean;
     micro_channels_spike_summary.spike_shapes_std = spike_shapes_std;
-  
+    
     save(fullfile(spikeSortingDir,sprintf('%s_spike_timestamps_post_processing',header.id)),'micro_channels_spike_summary')
 end
 
@@ -443,7 +494,7 @@ if strcmp(whatToDo,'YES')
     A = zeros(Nsamples,1);
     EDFHeader.labels{NStimCh} = sprintf('stimulation');
     whatToDo2 = questdlg('Would you like to add stim channel?','EDF','YES','NO','NO');
-
+    
     if strcmp(whatToDo2,'YES')
         
         whatToDo2 = questdlg('BR\NLX based stim?','EDF','BR','NLX','BR');
@@ -469,7 +520,7 @@ if strcmp(whatToDo,'YES')
             DATA_MAT_EDF(NStimCh,:) = A;
         end
     end
-        
+    
     EDFHeader.samplerate = Consts.DOWNSAMPLED_FREQUENCY;
     EDFHeader.annotation = [];
     EDFHeader.annotation.event = [];
@@ -483,30 +534,30 @@ end
 
 whatToDo = questdlg('Extracting time from NLX files?','Q','YES','NO','NO');
 if strcmp(whatToDo,'YES')
-DATA_DIR = inputdlg('Enter folder path:');
-DATA_DIR = DATA_DIR{1};
-CH = inputdlg('Enter channel name:');
-CH = CH{1};
-filelist = dir(fullfile(DATA_DIR,sprintf('%s*',CH)));
-FieldSelection = [0 0 0 0 1] ; % Will read all the variables from the file
-ExtractionMode = 2 ; % read only relevant session according to given timestamps
-ExtractionModeArray = [1 600000];
-
-for ii = 3:length(filelist)
-filename_CSC_EEG_in = fullfile(DATA_DIR, filelist(ii).name);
-a = dir(filename_CSC_EEG_in);
-if( a.bytes == 16384 )
-    disp(sprintf('file %s is empty (%d bytes)',files(ii).name,files(ii).bytes))
-    continue
-end
-
-[ ~, NlxHeader] = ...
-    Nlx2MatCSC( filename_CSC_EEG_in, FieldSelection, 1, ExtractionMode, ExtractionModeArray ) ;
-
-filelist(ii).name
-NlxHeader(8)
-NlxHeader(9)
-keyboard
-end
-
+    DATA_DIR = inputdlg('Enter folder path:');
+    DATA_DIR = DATA_DIR{1};
+    CH = inputdlg('Enter channel name:');
+    CH = CH{1};
+    filelist = dir(fullfile(DATA_DIR,sprintf('%s*',CH)));
+    FieldSelection = [0 0 0 0 1] ; % Will read all the variables from the file
+    ExtractionMode = 2 ; % read only relevant session according to given timestamps
+    ExtractionModeArray = [1 600000];
+    
+    for ii = 3:length(filelist)
+        filename_CSC_EEG_in = fullfile(DATA_DIR, filelist(ii).name);
+        a = dir(filename_CSC_EEG_in);
+        if( a.bytes == 16384 )
+            disp(sprintf('file %s is empty (%d bytes)',files(ii).name,files(ii).bytes))
+            continue
+        end
+        
+        [ ~, NlxHeader] = ...
+            Nlx2MatCSC( filename_CSC_EEG_in, FieldSelection, 1, ExtractionMode, ExtractionModeArray ) ;
+        
+        filelist(ii).name
+        NlxHeader(8)
+        NlxHeader(9)
+        keyboard
+    end
+    
 end %function
