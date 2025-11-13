@@ -12,8 +12,8 @@ addpath('C:\Users\mgeva\Documents\GitHub\')
 rmFieldTripAccessPath
 
 try
-goal_loc_file = 'E:\MAZE\ptData\maze_goals_with_quadrants.csv';
-goal_maze_table = readtable(goal_loc_file);
+    goal_loc_file = 'E:\MAZE\ptData\maze_goals_with_quadrants.csv';
+    goal_maze_table = readtable(goal_loc_file);
 catch
     error('maze-goal pairing not found')
 end

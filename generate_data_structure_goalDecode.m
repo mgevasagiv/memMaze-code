@@ -250,7 +250,7 @@ for i = 1:length(block_types)
     block = block_types{i};
     clear all_D_idx state_idx_good_maze D_onset_set D_maze_id
 
-    for rep = 3
+    for rep = 2:3
         
         % First collect all relevant events
         count = 1;

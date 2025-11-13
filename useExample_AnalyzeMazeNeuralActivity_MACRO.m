@@ -62,11 +62,11 @@ for iPatient = 1:nPatients % Until Data from  I106 arrives
     runData(iPatient).channelsForAnalysis = [];
     results_folder_top = 'E:\Data_p\ClosedLoopDataset\';
 
-    if isempty(dir(fullfile(BEHAV_TRIALS_FOLDER,sprintf('*%s_%d*behav_data_structure_goal_decode.mat',runData(iPatient).patientName(4:end),str2num(expNames{iPatient}(end))))))
-        generateBehavDataStructureGoalDecoding(runData(iPatient).patientName(2:end),runData(iPatient).DataFolder,runData(iPatient).EXP)
-        plot_range_ms = [-500 1500];
+    %if isempty(dir(fullfile(BEHAV_TRIALS_FOLDER,sprintf('*%s_%d*behav_data_structure_goal_decode.mat',runData(iPatient).patientName(4:end),str2num(expNames{iPatient}(end))))))
+    %    generateBehavDataStructureGoalDecoding(runData(iPatient).patientName(2:end),runData(iPatient).DataFolder,runData(iPatient).EXP)
+        plot_range_ms = [-500 2000];
         generate_data_structure_goalDecode(runData(iPatient).patientName(2:end) ,runData(iPatient).DataFolder,'',plot_range_ms, runData(iPatient).EXP )
-    end
+    %end
 
     if isempty(dir(fullfile(BEHAV_TRIALS_FOLDER,sprintf('*%s_%d*data_structure.mat',runData(iPatient).patientName(4:end),str2num(expNames{iPatient}(end)))))) 
         generateBehavDataStructure(runData(iPatient).patientName(2:end),runData(iPatient).DataFolder,runData(iPatient).EXP)
