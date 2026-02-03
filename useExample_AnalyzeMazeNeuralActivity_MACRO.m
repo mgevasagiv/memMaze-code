@@ -10,7 +10,7 @@ HPC_channels_spectralAnalysis = {[],... %17
     [1,103],... % 19_2 - Am, HPC
     [],... % 22 - no MTL
     [1,2,17,18],...%  23 - Am, HPC
-    [27:29.37:39],... % 26, Hip, AM
+    [27:29,37:39],... % 26, Hip, AM
     [1,2,13,14,23,24,35,36,47,48, 59,60],... % ir103, LAM, RAM, LHeadH, RHeadH, LTailH, RTailH
     [17 18 ],... % p30
     [1,2],... % p35
